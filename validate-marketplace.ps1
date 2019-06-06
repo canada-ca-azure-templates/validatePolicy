@@ -17,6 +17,16 @@ Get-Job | Remove-Job -Force
 if ($acceptTerms) {
     Get-AzureRmMarketplaceTerms -Publisher cisco -Product cisco-asav -Name asav-azure-byol | Set-AzureRmMarketplaceTerms -Accept
     Get-AzureRmMarketplaceTerms -Publisher fortinet -Product fortinet_fortigate-vm_v5 -Name latest | Set-AzureRmMarketplaceTerms -Accept
+    Get-AzureRmMarketplaceTerms -Publisher bitnami -Product elastic-search -Name latest | Set-AzureRmMarketplaceTerms -Accept
+}
+
+# Validate that the Marketplace Policy is in place
+Set-Location (Resolve-Path $PSScriptRoot\testDisallowed)
+$res = & .\validate.ps1
+if (-not $res) {
+    throw "The Marketplace Policy does not appear to be in place... stopping..."
+} else {
+    Write-Host "The Marketplace Policy is in place, moving on with testing..."
 }
 
 foreach ($templateToValidate in $templatesToValidate) { 
