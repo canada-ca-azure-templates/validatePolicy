@@ -111,12 +111,12 @@ if (-not $doNotCleanup) {disallowed marketplace deployment
     }
 }
 
-if ($outPut[1] -contains "policy violation") {
+if ($outPut[1] -like "*policy violation*") {
     Write-Host  "Validation of disallowed marketplace deployment succeeded... The item could not be deployed"
 } else {
     if ($provisionningStateValidation -eq "Success") {
         throw "Validation of disallowed marketplace deployment failed... The marketplace item deployed when it should not have been the case"
     } else {
-        throw "Validation failed for some unknown readon. Please investigate"
+        throw "Validation failed for some unknown reason. Please investigate"
     }
 }
