@@ -109,7 +109,9 @@ if (-not $doNotCleanup) {disallowed marketplace deployment
     }
 }
 
+Write-Host ""
 Write-Host $outPut
+Write-Host ""
 
 if ($provisionningStateValidation -eq "Success") {
     throw "Validation of disallowed marketplace deployment failed... The marketplace item deployed when it should not have been the case"
