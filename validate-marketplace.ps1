@@ -74,6 +74,6 @@ Start-Job -Name "azurefirewall" {
 #Write-Host "Waiting for parallel template validation jobs to finish..."
 #Get-Job | Wait-Job
 
-if (Get-Job -State Failed) {
-    throw "One of the jobs was not successfully created... exiting..."
-}
+#if (Get-Job -State Failed) {
+#    throw "One of the jobs was not successfully created... exiting..."
+#}
