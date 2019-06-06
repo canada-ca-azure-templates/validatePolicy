@@ -30,7 +30,7 @@ function getBaseParametersURL {
     return $baseParametersURL
 }
 
-$validationURL = getValidationURL
+$validationURL = "https://raw.githubusercontent.com/canada-ca-azure-templates/servers/20190603/template/azuredeploy.json"
 $baseParametersURL = getBaseParametersURL
 
 if (-not $devopsCICD) {
