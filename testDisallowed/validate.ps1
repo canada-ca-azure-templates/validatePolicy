@@ -1,5 +1,5 @@
 Param(
-    [Parameter(Mandatory = $false)][string]$templateLibraryName = (Split-Path (Resolve-Path "$PSScriptRoot\..") -Leaf),
+    [Parameter(Mandatory = $false)][string]$templateLibraryName = "disallowed",
     [string]$Location = "canadacentral",
     [string]$subscription = "",
     [switch]$devopsCICD = $false,
