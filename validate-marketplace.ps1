@@ -1,75 +1,34 @@
-#Enable-AzContextAutosave
-#$creds = Get-Credential
-#$job = Start-Job { param($vmadmin) New-AzVM -Name MyVm -Credential $vmadmin} -ArgumentList $creds
+Param(
+    [switch]$acceptTerms = $false
+)
 
+# Global variables
+$templatesToValidate = "asg", "dns", "resourcegroups", "servers", "ciscoasav2nic", "fortigate2nic", "azurefirewall", "s2d"
+
+# sign in
+if ([string]::IsNullOrEmpty($(Get-AzureRmContext).Account)) {
+    Write-Host "You need to login. Minimize the Visual Studio Code and login to the window that poped-up"
+    Login-AzureRmAccount
+}
+
+# Cleanup jobs to start fresh
 Get-Job | Remove-Job -Force
 
-Start-Job -Name "resourcegroups" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\resourcegroups\test)
+if ($acceptTerms) {
+    Get-AzureRmMarketplaceTerms -Publisher cisco -Product cisco-asav -Name asav-azure-byol | Set-AzureRmMarketplaceTerms -Accept
+    Get-AzureRmMarketplaceTerms -Publisher fortinet -Product fortinet_fortigate-vm_v5 -Name latest | Set-AzureRmMarketplaceTerms -Accept
+}
 
-Start-Job -Name "asg" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\asg\test)
-
-Start-Job -Name "dns" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\dns\test)
-
-Start-Job -Name "servers" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\servers\test)
-
-#Get-AzureRmMarketplaceTerms -Publisher cisco -Product cisco-asav -Name asav-azure-byol | Set-AzureRmMarketplaceTerms -Accept
-
-Start-Job -Name "ciscoasav2nic" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\ciscoasav2nic\test)
-
-#Get-AzureRmMarketplaceTerms -Publisher fortinet -Product fortinet_fortigate-vm_v5 -Name latest | Set-AzureRmMarketplaceTerms -Accept
-
-Start-Job -Name "fortigate2nic" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\fortigate2nic\test)
-
-Start-Job -Name "azurefirewall" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\azurefirewall\test)
+foreach ($templateToValidate in $templatesToValidate) { 
+    Start-Job -Name $templateToValidate {
+        param($path)
+        Set-Location $path
+        $res = & .\validate.ps1
+        if (-not $res) {
+            throw "Failed to validate"
+        }
+    } -ArgumentList (Resolve-Path $PSScriptRoot\..\$templateToValidate\test)
+}
 
 #Write-Host "Waiting for parallel template validation jobs to finish..."
 #Get-Job | Wait-Job
