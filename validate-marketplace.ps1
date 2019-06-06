@@ -1,79 +1,51 @@
-#Enable-AzContextAutosave
-#$creds = Get-Credential
-#$job = Start-Job { param($vmadmin) New-AzVM -Name MyVm -Credential $vmadmin} -ArgumentList $creds
+Param(
+    [switch]$acceptTerms = $false,
+    [switch]$doNotTestDisallowed = $false
+)
 
+# Global variables
+$templatesToValidate = "asg", "availabilityset", "azurefirewall", "ciscoasav2nic", "ciscoasav4nic", "devtestlab", "dns", "fortigate2nic", "fortigate4nic", "keyvaults", "loadbalancers", "loganalytics", "nsg", "resourcegroups", "routes", "servers", "storage", "vnet-peering", "vnet-subnet"
+
+# sign in
+if ([string]::IsNullOrEmpty($(Get-AzureRmContext).Account)) {
+    Write-Host "You need to login. Minimize the Visual Studio Code and login to the window that poped-up"
+    Login-AzureRmAccount
+}
+
+# Cleanup jobs to start fresh
 Get-Job | Remove-Job -Force
 
-Start-Job -Name "resourcegroups" {
-    param($path)
-    Set-Location $path
+if ($acceptTerms) {
+    Get-AzureRmMarketplaceTerms -Publisher cisco -Product cisco-asav -Name asav-azure-byol | Set-AzureRmMarketplaceTerms -Accept
+    Get-AzureRmMarketplaceTerms -Publisher fortinet -Product fortinet_fortigate-vm_v5 -Name latest | Set-AzureRmMarketplaceTerms -Accept
+    Get-AzureRmMarketplaceTerms -Publisher bitnami -Product elastic-search -Name latest | Set-AzureRmMarketplaceTerms -Accept
+}
+
+if (!$doNotTestDisallowed) {
+    # Validate that the Marketplace Policy is in place
+    Set-Location (Resolve-Path $PSScriptRoot\testDisallowed)
     $res = & .\validate.ps1
     if (-not $res) {
-        throw "Failed to validate"
+        throw "The Marketplace Policy does not appear to be in place... stopping..."
     }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\resourcegroups\test)
-
-Start-Job -Name "asg" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
+    else {
+        Write-Host "The Marketplace Policy is in place, moving on with testing..."
     }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\asg\test)
 
-Start-Job -Name "dns" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
+    Set-Location $PSScriptRoot
+}
+
+foreach ($templateToValidate in $templatesToValidate) {
+    if (!(Test-Path (Resolve-Path $PSScriptRoot\..\$templateToValidate) -PathType Container)) {
+        git clone https://github.com/canada-ca-azure-templates/$templatesToValidate.git (Resolve-Path $PSScriptRoot\..)
     }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\dns\test)
 
-Start-Job -Name "servers" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\servers\test)
-
-#Get-AzureRmMarketplaceTerms -Publisher cisco -Product cisco-asav -Name asav-azure-byol | Set-AzureRmMarketplaceTerms -Accept
-
-Start-Job -Name "ciscoasav2nic" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\ciscoasav2nic\test)
-
-#Get-AzureRmMarketplaceTerms -Publisher fortinet -Product fortinet_fortigate-vm_v5 -Name latest | Set-AzureRmMarketplaceTerms -Accept
-
-Start-Job -Name "fortigate2nic" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\fortigate2nic\test)
-
-Start-Job -Name "azurefirewall" {
-    param($path)
-    Set-Location $path
-    $res = & .\validate.ps1
-    if (-not $res) {
-        throw "Failed to validate"
-    }
-} -ArgumentList (Resolve-Path $PSScriptRoot\..\azurefirewall\test)
-
-#Write-Host "Waiting for parallel template validation jobs to finish..."
-#Get-Job | Wait-Job
-
-#if (Get-Job -State Failed) {
-#    throw "One of the jobs was not successfully created... exiting..."
-#}
+    Start-Job -Name $templateToValidate {
+        param($path)
+        Set-Location $path
+        $res = & .\validate.ps1
+        if (-not $res) {
+            throw "Failed to validate"
+        }
+    } -ArgumentList (Resolve-Path $PSScriptRoot\..\$templateToValidate\test)
+}

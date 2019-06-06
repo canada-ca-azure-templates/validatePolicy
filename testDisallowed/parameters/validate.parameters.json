@@ -1,0 +1,66 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmArray": {
+            "value": [
+                {
+                    "resourceGroup": "PwS2-validate-disallowed-RG",
+                    "vmKeyVault": {
+                        "keyVaultResourceGroupName": "PwS2-validate-disallowed-RG",
+                        "keyVaultName": "PwS2-validate-[unique]"
+                    },
+                    "vm": {
+                        "computerName": "disallowed",
+                        "adminUsername": "azureadmin",
+                        "adminPassword": "linuxDefaultPassword",
+                        "vmSize": "Standard_B1s",
+                        "bootDiagnostic": true,
+                        "storageProfile": {
+                            "osDisk": {
+                                "createOption": "fromImage",
+                                "managedDisk": {
+                                    "storageAccountType": "StandardSSD_LRS"
+                                }
+                            },
+                            "dataDisks": [],
+                            "imageReference": {
+                                "publisher": "bitnami",
+                                "offer": "elastic-search",
+                                "sku": "2-2",
+                                "version": "7.1.1905290009"
+                            }
+                        },
+                        "plan": {
+                            "name": "2-2",
+                            "publisher": "bitnami",
+                            "product": "elastic-search"
+                        }
+                    },
+                    "networkSecurityGroups": {
+                        "name": "nsg",
+                        "properties": {
+                            "securityRules": []
+                        }
+                    },
+                    "networkInterfaces": {
+                        "name": "NIC1",
+                        "publicIPAddressName": "NIC1-PubIP",
+                        "acceleratedNetworking": false,
+                        "vnetResourceGroupName": "PwS2-validate-disallowed-RG",
+                        "vnetName": "PwS2-validate-disallowed-1-VNET",
+                        "subnetName": "test1"
+                    },
+                    "tagValues": {
+                        "Owner": "build.pipeline@tpsgc-pwgsc.gc.ca",
+                        "CostCenter": "PSPC-EA",
+                        "Enviroment": "Validate",
+                        "Classification": "Unclassified",
+                        "Organizations": "PSPC-CCC-E&O",
+                        "DeploymentVersion": "2019-01-11-01"
+                    }
+                }
+            ]
+        }
+    }
+}
