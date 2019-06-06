@@ -94,7 +94,7 @@ if (-not $doNotDeployPreReq) {
 # Validating server template
 Write-Host "Starting $templateLibraryName validation deployment...";
 
-New-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$templateLibraryName-RG -Name "validate-$templateLibraryName-template" -TemplateUri $validationURL -TemplateParameterFile (Resolve-Path "$PSScriptRoot\parameters\validate.parameters.json") -Verbose -Pre
+$outPut = New-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$templateLibraryName-RG -Name "validate-$templateLibraryName-template" -TemplateUri $validationURL -TemplateParameterFile (Resolve-Path "$PSScriptRoot\parameters\validate.parameters.json") -Verbose -Pre
 
 $provisionningStateValidation = (Get-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$templateLibraryName-RG -Name "validate-$templateLibraryName-template").ProvisioningState
 
@@ -109,7 +109,7 @@ if (-not $doNotCleanup) {disallowed marketplace deployment
     }
 }
 
-Write-Host $provisionningStateValidation
+Write-Host $outPut
 
 if ($provisionningStateValidation -eq "Success") {
     throw "Validation of disallowed marketplace deployment failed... The marketplace item deployed when it should not have been the case"
