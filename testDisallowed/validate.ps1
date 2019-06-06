@@ -26,12 +26,28 @@ function getBaseParametersURL {
     $currentBranch = git rev-parse --abbrev-ref HEAD
     $remoteURLnogit = $remoteURL -replace '\.git', ''
     $remoteURLRAW = $remoteURLnogit -replace 'github.com', 'raw.githubusercontent.com'
-    $baseParametersURL = $remoteURLRAW + '/' + $currentBranch + '/test/parameters/'
+    $baseParametersURL = $remoteURLRAW + '/' + $currentBranch + '/testDisallowed/parameters/'
     return $baseParametersURL
 }
 
-$validationURL = "https://raw.githubusercontent.com/canada-ca-azure-templates/servers/20190603/template/azuredeploy.json"
-$baseParametersURL = "https://raw.githubusercontent.com/canada-ca-azure-templates/$templateLibraryName/master/test/"
+$validationURL = getValidationURL
+$baseParametersURL = getBaseParametersURL
+
+if (-not $devopsCICD) {
+    $currentBranch = git rev-parse --abbrev-ref HEAD
+
+    if ($currentBranch -eq 'master') {
+        Write-Host "You are working off the master branch... Validation will happen against the github master branch code and will not include any changes you may have made."
+        Write-Host "If you want to walidate changes you have made make sure to create a new branch and push those to the remote github server with something like:"
+        Write-Host ""
+        Write-Host "git branch dev ; git checkout dev; git add ..\. ; git commit -m "Update validation" ; git push -u origin dev"
+    }
+    else {
+        # Make sure we update code to git
+        # git branch dev ; git checkout dev ; git pull origin dev
+        git add ..\. ; git commit -m "Update validation" ; git push -u origin $currentBranch
+    }
+}
 
 if ($subscription -ne "") {
     Select-AzureRmSubscription -Subscription $subscription

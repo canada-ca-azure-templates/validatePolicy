@@ -36,15 +36,6 @@
                     "dependsOn": [
                         "resourcegroups-disallowed"
                     ]
-                },
-                {
-                    "name": "availavilityset-disallowed",
-                    "location": "canadacentral",
-                    "templateLink": "https://raw.githubusercontent.com/canada-ca-azure-templates/availabilityset/20190506/template/azuredeploysub.json",
-                    "parametersFile": "dependancy-availabilityset.parameters.json",
-                    "dependsOn": [
-                        "resourcegroups-disallowed"
-                    ]
                 }
             ]
         }
