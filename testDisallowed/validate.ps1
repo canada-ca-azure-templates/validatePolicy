@@ -98,7 +98,7 @@ $outPut = New-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$t
 
 Write-Host $outPut
 
-$provisionningStateValidation = (Get-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$templateLibraryName-RG -Name "validate-$templateLibraryName-template").ProvisioningState
+$provisionningStateValidation = (Get-AzureRmResourceGroupDeployment -ResourceGroupName PwS2-validate-$templateLibraryName-RG -Name "validate-$templateLibraryName-template" -ErrorAction SilentlyContinue).ProvisioningState
 
 if (-not $doNotCleanup) {disallowed marketplace deployment
     #check for existing resource group
@@ -111,7 +111,7 @@ if (-not $doNotCleanup) {disallowed marketplace deployment
     }
 }
 
-if ($outPut -like "*pollicy violation*") {
+if ($outPut -like "*policy violation*") {
     Write-Host  "Validation of disallowed marketplace deployment succeeded... The item could not be deployed"
 } else {
     if ($provisionningStateValidation -eq "Success") {
