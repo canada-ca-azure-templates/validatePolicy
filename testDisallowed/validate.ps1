@@ -111,7 +111,7 @@ if (-not $doNotCleanup) {disallowed marketplace deployment
     }
 }
 
-if ($outPut -like "*policy violation*") {
+if ($outPut -like "*pollicy violation*") {
     Write-Host  "Validation of disallowed marketplace deployment succeeded... The item could not be deployed"
 } else {
     if ($provisionningStateValidation -eq "Success") {
